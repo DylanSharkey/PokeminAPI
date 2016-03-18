@@ -41,13 +41,18 @@ class CaptureViewController: UIViewController {
         let requestURL = "http://pokeapi.co/api/v2/pokemon/" + String(pokemonNum!)
         let imageURL = "http://pokeapi.co/media/sprites/pokemon/" + String(pokemonNum!) + ".png"
         
+        
+        /*********************************************************
+        **********     Beginning of API Request Code    **********
+        *********************************************************/
+        //First request to get all for for the pokemon number
         Alamofire.request(.GET, requestURL).validate() .responseJSON { response in
             
             print(response.request)  // original URL request
             print(response.response) // URL response
             print(response.result)   // result of response serialization
             
-            //Check if error on request
+            //Check if error on request, if so print error and break
             guard response.result.isSuccess else {
                 print("Error while fetching remote information: \(response.result.error)")
                 activityIndicator.removeFromSuperview()
@@ -55,16 +60,13 @@ class CaptureViewController: UIViewController {
                 return
             }
             
-            //Get Pokemon Image
+            //Second embedded request to get the image sprite for the pokemon number
             Alamofire.request(.GET, imageURL).response() {
                 (res, req, data, error) in
                 
-                let image = UIImage(data: data!)
-                self.myImage.image = image
-                self.myImage.hidden = false
                 
+                //Handle JSON data and get name of pokemon from first request
                 var pokeName: String?
-                
                 if let JSON = response.result.value {
                     print(JSON)
                     //Make use of JSON data
@@ -73,7 +75,13 @@ class CaptureViewController: UIViewController {
                     }
                 }
                 
-                //Create Pokemon Object
+                //Handle Image data from second request
+                let image = UIImage(data: data!)
+                self.myImage.image = image
+                self.myImage.hidden = false
+                
+                
+                //Create Pokemon Realm Object
                 let pokeman = Pokemon()
                 pokeman.image = UIImagePNGRepresentation(image!)
                 pokeman.name = pokeName!
@@ -95,24 +103,3 @@ class CaptureViewController: UIViewController {
         }
     }
 }
-
-//if let urltoReq = NSURL(string: requestURL) {
-//    if let data = NSData(contentsOfURL: urltoReq) {
-//        let arrOfPokemonInfo = parseJSON(data)
-//        for info in arrOfPokemonInfo! {
-//            print(info["name"] as! String)
-//        }
-//    }
-//}
-//
-//func parseJSON(inputData: NSData) -> NSArray?
-//{
-//    var arrOfObjects: NSArray?
-//    do {
-//        arrOfObjects = try NSJSONSerialization.JSONObjectWithData(inputData, options: NSJSONReadingOptions.MutableContainers) as? NSArray
-//    } catch let error as NSError {
-//        print(error)
-//    }
-//    return arrOfObjects
-//}
-
